@@ -1,74 +1,41 @@
 #include "monty.h"
-
 /**
- * main - entry into interpreter
- * @argc: argc counter
- * @argv: arguments
- * Return: 0 on success
- */
-int main(int argc, char *argv[])
+ * f_mod - computes the rest of the division of the second
+ * top element of the stack by the top element of the stack
+ * @head: stack head
+ * @counter: line_number
+ * Return: no return
+*/
+void f_mod(stack_t **head, unsigned int counter)
 {
-	int fd, ispush = 0;
-	unsigned int line = 1;
-	ssize_t n_read;
-	char *buffer, *token;
-	stack_t *h = NULL;
+	stack_t *h;
+	int len = 0, aux;
 
-	if (argc != 2)
+	h = *head;
+	while (h)
 	{
-		printf("USAGE: monty file\n");
+		h = h->next;
+		len++;
+	}
+	if (len < 2)
+	{
+		fprintf(stderr, "L%d: can't mod, stack too short\n", counter);
+		fclose(bus.file);
+		free(bus.content);
+		free_stack(*head);
 		exit(EXIT_FAILURE);
 	}
-	fd = open(argv[1], O_RDONLY);
-	if (fd == -1)
+	h = *head;
+	if (h->n == 0)
 	{
-		printf("Error: Can't open file %s\n", argv[1]);
+		fprintf(stderr, "L%d: division by zero\n", counter);
+		fclose(bus.file);
+		free(bus.content);
+		free_stack(*head);
 		exit(EXIT_FAILURE);
 	}
-	buffer = malloc(sizeof(char) * 10000);
-	if (!buffer)
-		return (0);
-	n_read = read(fd, buffer, 10000);
-	if (n_read == -1)
-	{
-		free(buffer);
-		close(fd);
-		exit(EXIT_FAILURE);
-	}
-	token = strtok(buffer, "\n\t\a\r ;:");
-	while (token != NULL)
-	{
-		if (ispush == 1)
-		{
-			push(&h, line, token);
-			ispush = 0;
-			token = strtok(NULL, "\n\t\a\r ;:");
-			line++;
-			continue;
-		}
-		else if (strcmp(token, "push") == 0)
-		{
-			ispush = 1;
-			token = strtok(NULL, "\n\t\a\r ;:");
-			continue;
-		}
-		else
-		{
-			if (get_op_func(token) != 0)
-			{
-				get_op_func(token)(&h, line);
-			}
-			else
-			{
-				free_dlist(&h);
-				printf("L%d: unknown instruction %s\n", line, token);
-				exit(EXIT_FAILURE);
-			}
-		}
-		line++;
-		token = strtok(NULL, "\n\t\a\r ;:");
-	}
-	free_dlist(&h); free(buffer);
-	close(fd);
-	return (0);
+	aux = h->next->n % h->n;
+	h->next->n = aux;
+	*head = h->next;
+	free(h);
 }
