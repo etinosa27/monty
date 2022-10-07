@@ -1,1 +1,1 @@
-Stacks
+Stacks, Queues - LIFO, FIFO
